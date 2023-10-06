@@ -1,4 +1,25 @@
 console.log('Extensão "Calculadora de Horas Trabalhadas" carregada');
+function calculateTotalMillis(data) {
+    try {
+        let totalMillis = 0;
+        for (let i = 0; i < data.items.length; i += 2) {
+            if (data.items[i + 1]) {
+                totalMillis += (data.items[i + 1].hour - data.items[i].hour);
+            }
+        }
+
+        const lastItem = data.items[data.items.length - 1];
+        if (lastItem && lastItem.direction === "entry") {
+            const now = new Date();
+            const nowMillis = (now.getHours() * 60 * 60 * 1000) + (now.getMinutes() * 60 * 1000) + (now.getSeconds() * 1000);
+            totalMillis += nowMillis - lastItem.hour;
+        }
+
+        return totalMillis;
+    } catch (err) {
+        return 0
+    }
+}
 function checkPageAndRun() {
     if (window.location.href.includes("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/#/timesheet/clockingsGeo/register")) {
         const token = localStorage.getItem("token");
@@ -22,19 +43,10 @@ function checkPageAndRun() {
         })
             .then(response => response.json())
             .then(data => {
-                let totalMillis = 0;
-                for (let i = 0; i < data.items.length; i += 2) {
-                    if (data.items[i + 1]) { // Se existir um par para essa entrada
-                        totalMillis += (data.items[i + 1].hour - data.items[i].hour);
-                    }
-                }
+                chrome.storage.local.set({ workingHoursData: data });
+                console.log("Dados armazenados:", data);
 
-                const lastItem = data.items[data.items.length - 1];
-                if (lastItem && lastItem.direction === "entry") {
-                    const now = new Date();
-                    const nowMillis = (now.getHours() * 60 * 60 * 1000) + (now.getMinutes() * 60 * 1000) + (now.getSeconds() * 1000);
-                    totalMillis += nowMillis - lastItem.hour;
-                }
+                let totalMillis = calculateTotalMillis(data);
 
                 const totalHours = Math.floor(totalMillis / (60 * 60 * 1000));
                 const totalMinutes = Math.floor((totalMillis % (60 * 60 * 1000)) / (60 * 1000));
@@ -58,7 +70,7 @@ function checkPageAndRun() {
     }
 }
 
-checkPageAndRun()
+setTimeout(checkPageAndRun, 2000);
 
 let lastURL = window.location.href;
 new MutationObserver(() => {
