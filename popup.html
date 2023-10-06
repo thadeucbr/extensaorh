@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horas Trabalhadas</title>
+    <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-<h2>Horas Trabalhadas</h2>
-<div id="hoursData">Carregando...</div>
+<div style="position: relative;">
+    <div id="hoursData">
+        <p id="workedHours">Carregando horas trabalhadas...</p>
+        <p id="remainingHours">Carregando horas restantes...</p>
+        <p id="estimatedEnd">Calculando horário de término...</p>
+    </div>
+    <button id="openSettings" title="Configurações">⚙️</button>
+</div>
 <script src="popup.js"></script>
 </body>
 </html>

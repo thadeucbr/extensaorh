@@ -1,0 +1,41 @@
+body {
+    font-family: Arial, sans-serif;
+    width: 250px; /* Defina a largura do popup */
+    padding: 10px;
+    background-color: #f7f7f7;
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+#hoursData p {
+    margin: 0px 0;
+    padding: 5px;
+}
+
+#workedHours {
+    background-color: #e0ffe0; /* Verde claro */
+}
+
+#remainingHours {
+    background-color: #ffe0e0; /* Vermelho claro */
+}
+
+/* Estilo para o botão de configuração */
+#openSettings {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#openSettings:hover {
+    opacity: 0.7;
+}
