@@ -48,7 +48,6 @@ if (!window.hasRunContentScript) {
                 .then(response => response.json())
                 .then(data => {
                     chrome.storage.local.set({workingHoursData: data});
-                    console.log("Dados armazenados:", data);
 
                     let totalMillis = calculateTotalMillis(data);
 
@@ -90,7 +89,6 @@ if (!window.hasRunContentScript) {
 
     function updateDataBeforeLeaving() {
         const token = localStorage.getItem("token");
-        console.log('Atualizando dados')
         fetch("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/rm/api/rest/new/timesheet/todayClockings/%7Bcurrent%7D/0/0/", {
             "headers": {
                 "accept": "application/json, text/plain, */*",

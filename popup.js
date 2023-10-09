@@ -79,6 +79,33 @@ const funnyMessages = {
         "Você está indo além! Já são {time} a mais.",
         "Não esqueça de fazer uma pausa, já são {time} extras!",
         "Você é imparável! Mas lembre-se de descansar após {time} a mais."
+    ],
+    notClockedYetMessages: [
+        "Ei! Você esqueceu de algo? Ainda não marcou o ponto!",
+        "Parece que alguém esqueceu de bater o ponto. Será que é você?",
+        "Seu relógio está te chamando... Vai marcar o ponto?",
+        "Opa! Não vi seu ponto aqui. Já marcou?",
+        "Está esperando um convite especial para marcar o ponto?",
+        "Não queremos que você trabalhe de graça! Vai lá e marque o ponto.",
+        "Bater o ponto é como dizer 'Oi' para o relógio. Já disse 'Oi' hoje?",
+        "Alô? Seu ponto está esperando...",
+        "Não se preocupe, o relógio não morde. Pode marcar o ponto!",
+        "Se você não marcar o ponto, quem vai?",
+        "O relógio está se sentindo solitário. Dê uma passada lá!",
+        "Marcar o ponto é como dar check-in no trabalho. Não se esqueça!",
+        "Pssst... Você esqueceu de algo importante. Seu ponto!",
+        "Vai uma dica? Marque o ponto antes que o relógio sinta sua falta.",
+        "Seu chefe pode não ter visto, mas eu vi. Vai marcar o ponto?",
+        "Não deixe o relógio esperando. Ele está ansioso pelo seu ponto.",
+        "Opa! Acho que você esqueceu de um detalhe... Seu ponto!",
+        "Marcar o ponto é o primeiro passo do dia. Já deu o seu?",
+        "Você sente que está esquecendo algo? Ah, é o ponto!",
+        "Antes de tudo, marque o ponto. O resto vem depois!",
+        "Hey! O relógio está te chamando. Atenda e marque o ponto.",
+        "Já tomou café? Já marcou o ponto? Não? Então vá lá!",
+        "Não se esqueça: café primeiro, depois o ponto. Ou seria o contrário?",
+        "Se está lendo isso, é um lembrete para marcar o ponto.",
+        "Bater o ponto é o 'bom dia' que você dá para o relógio. Já deu o seu hoje?"
     ]
 };
 
@@ -110,50 +137,65 @@ document.getElementById('openSettings').addEventListener('click', function() {
 document.addEventListener("DOMContentLoaded", function() {
     chrome.storage.local.get(["workingHoursData", "version"], function(result) {
         const data = result.workingHoursData;
+
+        if (!data || !data.items) {
+            const randomIndex = Math.floor(Math.random() * funnyMessages.notClockedYetMessages.length);
+            document.getElementById("hoursData").textContent = funnyMessages.notClockedYetMessages[randomIndex];
+            return; // Sai da função para evitar mais processamento
+        }
+
         const version = result.version || 'funny';
 
-        if (data && data.items) {
-            let totalMillis = calculateTotalMillis(data);
-            const totalHours = Math.floor(totalMillis / (60 * 60 * 1000));
-            const totalMinutes = Math.floor((totalMillis % (60 * 60 * 1000)) / (60 * 1000));
+        if (data.items && data.items.length > 0) {
+            const recordDate = new Date(data.items[0].date);
+            const today = new Date();
 
-            const remainingMillis = (8 * 60 * 60 * 1000) - totalMillis;
-            let adjustedRemainingMillis = remainingMillis < 0 ? 0 : remainingMillis;
+            if (recordDate.getUTCFullYear() === today.getFullYear() &&
+                recordDate.getUTCMonth() === today.getMonth() &&
+                recordDate.getUTCDate() === today.getDate() && data.items) {
 
-            const now = new Date();
-            const estimatedEndMillis = now.getTime() + adjustedRemainingMillis;
-            const estimatedEnd = new Date(estimatedEndMillis);
-            const formattedEstimatedEnd = `${String(estimatedEnd.getHours()).padStart(2, '0')}:${String(estimatedEnd.getMinutes()).padStart(2, '0')}`;
+                let totalMillis = calculateTotalMillis(data);
+                const totalHours = Math.floor(totalMillis / (60 * 60 * 1000));
+                const totalMinutes = Math.floor((totalMillis % (60 * 60 * 1000)) / (60 * 1000));
 
-            if (version === 'funny') {
-                let message;
+                const remainingMillis = (8 * 60 * 60 * 1000) - totalMillis;
+                let adjustedRemainingMillis = remainingMillis < 0 ? 0 : remainingMillis;
 
-                if (totalMillis <= 8 * 60 * 60 * 1000) {
-                    const randomIndex = Math.floor(Math.random() * funnyMessages.before8Hours.length);
-                    message = funnyMessages.before8Hours[randomIndex].replace('{estimatedEnd}', formattedEstimatedEnd);
+                const now = new Date();
+                const estimatedEndMillis = now.getTime() + adjustedRemainingMillis;
+                const estimatedEnd = new Date(estimatedEndMillis);
+                const formattedEstimatedEnd = `${String(estimatedEnd.getHours()).padStart(2, '0')}:${String(estimatedEnd.getMinutes()).padStart(2, '0')}`;
+
+                if (version === 'funny') {
+                    let message;
+
+                    if (totalMillis <= 8 * 60 * 60 * 1000) {
+                        const randomIndex = Math.floor(Math.random() * funnyMessages.before8Hours.length);
+                        message = funnyMessages.before8Hours[randomIndex].replace('{estimatedEnd}', formattedEstimatedEnd);
+                    } else {
+                        const extraMillis = totalMillis - 8 * 60 * 60 * 1000;
+                        const extraHours = Math.floor(extraMillis / (60 * 60 * 1000));
+                        const extraMinutes = Math.floor((extraMillis % (60 * 60 * 1000)) / (60 * 1000));
+                        const extraTime = extraHours > 0 ? `${extraHours} horas e ${extraMinutes} minutos` : `${extraMinutes} minutos`;
+
+                        const randomIndex = Math.floor(Math.random() * funnyMessages.after8Hours.length);
+                        message = funnyMessages.after8Hours[randomIndex].replace('{extraHours}', extraTime);
+                    }
+
+                    document.getElementById("hoursData").innerHTML = message;
                 } else {
-                    const extraMillis = totalMillis - 8 * 60 * 60 * 1000;
-                    const extraHours = Math.floor(extraMillis / (60 * 60 * 1000));
-                    const extraMinutes = Math.floor((extraMillis % (60 * 60 * 1000)) / (60 * 1000));
-                    const extraTime = extraHours > 0 ? `${extraHours} horas e ${extraMinutes} minutos` : `${extraMinutes} minutos`;
+                    const formattedWorkedHours = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}`;
+                    const remainingHours = Math.floor(adjustedRemainingMillis / (60 * 60 * 1000));
+                    const remainingMinutes = Math.floor((adjustedRemainingMillis % (60 * 60 * 1000)) / (60 * 1000));
+                    const formattedRemainingHours = `${String(remainingHours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
 
-                    const randomIndex = Math.floor(Math.random() * funnyMessages.after8Hours.length);
-                    message = funnyMessages.after8Hours[randomIndex].replace('{extraHours}', extraTime);
+                    document.getElementById("workedHours").textContent = `Horas trabalhadas: ${formattedWorkedHours}`;
+                    document.getElementById("remainingHours").textContent = `Restante: ${formattedRemainingHours}`;
+                    document.getElementById("estimatedEnd").textContent = `Você deve trabalhar até as ${formattedEstimatedEnd}`;
                 }
-
-                document.getElementById("hoursData").innerHTML = message;
             } else {
-                const formattedWorkedHours = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}`;
-                const remainingHours = Math.floor(adjustedRemainingMillis / (60 * 60 * 1000));
-                const remainingMinutes = Math.floor((adjustedRemainingMillis % (60 * 60 * 1000)) / (60 * 1000));
-                const formattedRemainingHours = `${String(remainingHours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
-
-                document.getElementById("workedHours").textContent = `Horas trabalhadas: ${formattedWorkedHours}`;
-                document.getElementById("remainingHours").textContent = `Restante: ${formattedRemainingHours}`;
-                document.getElementById("estimatedEnd").textContent = `Você deve trabalhar até as ${formattedEstimatedEnd}`;
-            }
-        } else {
-            document.getElementById("hoursData").textContent = "Dados não disponíveis. Abra a página do RH para atualizar.";
-        }
+                const randomIndex = Math.floor(Math.random() * funnyMessages.notClockedYetMessages.length);
+                document.getElementById("hoursData").textContent = funnyMessages.notClockedYetMessages[randomIndex];
+            }}
     });
 });
