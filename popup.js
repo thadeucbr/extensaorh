@@ -131,10 +131,18 @@ function calculateTotalMillis(data) {
     }
 }
 document.getElementById('openSettings').addEventListener('click', function () {
-    window.open(chrome.runtime.getURL('settings.html'), 'settings', 'width=300,height=200,left=800%,top=400%');
+    settings = window.open(chrome.runtime.getURL('settings.html'), 'settings', 'width=300,height=200,left=800%,top=400%');
+
+    settings.addEventListener('beforeunload', function () {
+        funcaoFazTudo();
+    })
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+    funcaoFazTudo();
+});
+
+function funcaoFazTudo() {
     chrome.storage.local.get(["workingHoursData", "version"], function (result) {
         const data = result.workingHoursData;
 
@@ -184,6 +192,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     document.getElementById("hoursData").innerHTML = message;
                 } else {
+                    const html = `<p id="workedHours"/>\n<p id="remainingHours"/>\n<p id="estimatedEnd"/>`;
+                    document.getElementById("hoursData").innerHTML = html;
                     const formattedWorkedHours = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}`;
                     const remainingHours = Math.floor(adjustedRemainingMillis / (60 * 60 * 1000));
                     const remainingMinutes = Math.floor((adjustedRemainingMillis % (60 * 60 * 1000)) / (60 * 1000));
@@ -199,4 +209,5 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
-});
+}
+
