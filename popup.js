@@ -1,10 +1,10 @@
-chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     const currentTab = tabs[0];
     const url = currentTab.url;
 
     if (url.includes("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/#/timesheet/clockingsGeo/register")) {
         chrome.scripting.executeScript({
-            target: {tabId: currentTab.id},
+            target: { tabId: currentTab.id },
             files: ["content.js"]
         });
     }
@@ -130,12 +130,12 @@ function calculateTotalMillis(data) {
         return 0
     }
 }
-document.getElementById('openSettings').addEventListener('click', function() {
-    window.open(chrome.runtime.getURL('settings.html'), 'settings', 'width=300,height=200');
+document.getElementById('openSettings').addEventListener('click', function () {
+    window.open(chrome.runtime.getURL('settings.html'), 'settings', 'width=300,height=200,left=800%,top=400%');
 });
 
-document.addEventListener("DOMContentLoaded", function() {
-    chrome.storage.local.get(["workingHoursData", "version"], function(result) {
+document.addEventListener("DOMContentLoaded", function () {
+    chrome.storage.local.get(["workingHoursData", "version"], function (result) {
         const data = result.workingHoursData;
 
         if (!data || !data.items) {
@@ -196,6 +196,7 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 const randomIndex = Math.floor(Math.random() * funnyMessages.notClockedYetMessages.length);
                 document.getElementById("hoursData").textContent = funnyMessages.notClockedYetMessages[randomIndex];
-            }}
+            }
+        }
     });
 });
