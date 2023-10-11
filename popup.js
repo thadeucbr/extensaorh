@@ -172,8 +172,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const eightHoursInMillis = 8 * 60 * 60 * 1000;
 
         const data = result.workingHoursData;
-
-        if (!data || !data.items) {
+        if (!data || !data.items || data.items.length === 0) {
             const randomIndex = Math.floor(Math.random() * funnyMessages.notClockedYetMessages.length);
             document.getElementById("hoursData").textContent = funnyMessages.notClockedYetMessages[randomIndex];
             return; // Sai da função para evitar mais processamento
@@ -245,4 +244,3 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 }
-
