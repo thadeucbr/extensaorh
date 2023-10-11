@@ -131,7 +131,10 @@ function calculateTotalMillis(data) {
     }
 }
 document.getElementById('openSettings').addEventListener('click', function () {
-    settings = window.open(chrome.runtime.getURL('settings.html'), 'settings', 'width=300,height=200,left=800%,top=400%');
+    var leftPosition = window.screen.width * 0.45;
+    var topPosition = window.screen.height * 0.45;
+
+    settings = window.open(chrome.runtime.getURL('settings.html'), 'settings', `width=300,height=200,left=${leftPosition},top=${topPosition}`);
 
     settings.addEventListener('beforeunload', function () {
         funcaoFazTudo();
