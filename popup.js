@@ -106,28 +106,6 @@ const funnyMessages = {
         "Não se esqueça: café primeiro, depois o ponto. Ou seria o contrário?",
         "Se está lendo isso, é um lembrete para marcar o ponto.",
         "Bater o ponto é o 'bom dia' que você dá para o relógio. Já deu o seu hoje?"
-    ],
-    missedReturn: [
-        "Acho que alguém decidiu estender o almoço hoje!",
-        "Você é tão rápido que até o relógio não conseguiu te acompanhar na volta.",
-        "Férias surpresa? Lembre-se de marcar o ponto quando voltar!",
-        "Almoço estendido? Não se esqueça de marcar o ponto de volta!",
-        "Sabe o que combina com almoço? Bater o ponto na volta!",
-        "Parece que você estava em uma missão secreta durante o almoço. Não esqueça do ponto de volta!",
-        "Alguém está aproveitando o dia de sol durante o almoço! Lembre-se do ponto de volta!",
-        "Bater o ponto na volta é a única forma de provar que você não está em uma ilha deserta durante o almoço.",
-        "O relógio bateu ponto, mas você esqueceu!",
-        "Marque o ponto de volta antes que o relógio decida tirar férias também!",
-        "Seu almoço parece ter se tornado uma viagem no tempo. Não esqueça do ponto de volta!",
-        "Alguém está tão animado para trabalhar que esqueceu de marcar o ponto de volta!",
-        "O relógio diz que é hora de trabalhar, mas você esqueceu de marcar o ponto de volta!",
-        "Bater o ponto de volta é como o final feliz de uma história de almoço. Não perca!",
-        "Marque o ponto de volta antes que o relógio comece a fazer piadas sobre você!",
-        "Você esqueceu de marcar o ponto de volta e o relógio está rindo de você.",
-        "Alguém está desfrutando de um almoço tão bom que esqueceu do ponto de volta!",
-        "O relógio está preocupado que você tenha se perdido no almoço. Lembre-se do ponto de volta!",
-        "Lá se foi o ponto de volta voando como um passarinho! Não deixe escapar!",
-        "Quem precisa de ponto de volta quando se tem uma boa refeição? Ah, você precisa!"
     ]
 };
 
@@ -164,13 +142,8 @@ document.addEventListener("DOMContentLoaded", function () {
     funcaoFazTudo();
 });
 
-
 function funcaoFazTudo() {
     chrome.storage.local.get(["workingHoursData", "version"], function (result) {
-
-document.addEventListener("DOMContentLoaded", function() {
-    const eightHoursInMillis = 8 * 60 * 60 * 1000;
-
         const data = result.workingHoursData;
         if (!data || !data.items || data.items.length === 0) {
             const randomIndex = Math.floor(Math.random() * funnyMessages.notClockedYetMessages.length);
@@ -192,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const totalHours = Math.floor(totalMillis / (60 * 60 * 1000));
                 const totalMinutes = Math.floor((totalMillis % (60 * 60 * 1000)) / (60 * 1000));
 
-                const remainingMillis = (eightHoursInMillis) - totalMillis;
+                const remainingMillis = (8 * 60 * 60 * 1000) - totalMillis;
                 let adjustedRemainingMillis = remainingMillis < 0 ? 0 : remainingMillis;
 
                 const now = new Date();
@@ -200,22 +173,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 const estimatedEnd = new Date(estimatedEndMillis);
                 const formattedEstimatedEnd = `${String(estimatedEnd.getHours()).padStart(2, '0')}:${String(estimatedEnd.getMinutes()).padStart(2, '0')}`;
 
-                if (data.items.length % 2 === 0 && totalMillis <= eightHoursInMillis) {
-                    const randomIndex = Math.floor(Math.random() * funnyMessages.missedReturn.length);
-                    document.getElementById("hoursData").textContent = funnyMessages.missedReturn[randomIndex];
-                    return;
-                }
-
                 if (version === 'funny') {
                     let message;
 
-                    if (totalMillis <= eightHoursInMillis) {
+                    if (totalMillis <= 8 * 60 * 60 * 1000) {
                         const randomIndex = Math.floor(Math.random() * funnyMessages.before8Hours.length);
                         message = funnyMessages.before8Hours[randomIndex].replace('{estimatedEnd}', formattedEstimatedEnd);
-                    }
-
-                    if (totalMillis > eightHoursInMillis) {
-                        const extraMillis = totalMillis - eightHoursInMillis;
+                    } else {
+                        const extraMillis = totalMillis - 8 * 60 * 60 * 1000;
                         const extraHours = Math.floor(extraMillis / (60 * 60 * 1000));
                         const extraMinutes = Math.floor((extraMillis % (60 * 60 * 1000)) / (60 * 1000));
                         const extraTime = extraHours > 0 ? `${extraHours} horas e ${extraMinutes} minutos` : `${extraMinutes} minutos`;
