@@ -1,8 +1,11 @@
 body {
     font-family: Arial, sans-serif;
-    width: 250px; /* Defina a largura do popup */
+    width: 250px;
     padding: 10px;
     background-color: #f7f7f7;
+    /* display: flex;
+    align-items: center;
+    justify-content: space-between; */
 }
 
 h2 {
@@ -18,21 +21,23 @@ h2 {
 }
 
 #workedHours {
-    background-color: #e0ffe0; /* Verde claro */
+    background-color: #e0ffe0;
+    /* Verde claro */
 }
 
 #remainingHours {
-    background-color: #ffe0e0; /* Vermelho claro */
+    background-color: #ffe0e0;
+    /* Vermelho claro */
 }
 
 /* Estilo para o botão de configuração */
 #openSettings {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 4px;
+    right: -4px;
     background-color: transparent;
     border: none;
-    font-size: 20px;
+    font-size: 16px;
     cursor: pointer;
 }
 
