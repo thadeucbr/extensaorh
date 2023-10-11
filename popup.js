@@ -49,36 +49,36 @@ const funnyMessages = {
         "Seu compromisso de 8 horas já foi! Está na hora do bônus.",
         "Olha você fazendo hora extra! Já são {extraHours} a mais.",
         "Relaxa, você já fez sua parte! Agora é hora extra.",
-        "Você é incrível! Já se passaram {time} desde que você completou suas 8 horas.",
-        "Hora de um merecido descanso! Você já trabalhou {time} a mais!",
-        "Vai descansar! Você merece após {time} extras!",
-        "Você é um guerreiro! {time} a mais e contando.",
-        "Já pensou em uma pausa? {time} extra é um bom motivo.",
-        "Hora extra detectada! {time} e contando.",
-        "Cuidado para não se sobrecarregar! Você já tem {time} a mais.",
-        "Você é um exemplo! Mas lembre-se de descansar após essas {time} extras.",
-        "Parece que alguém está se esforçando! {time} a mais já!",
-        "Dê uma pausa, herói do escritório! Você já tem {time} extras.",
-        "Você está on fire! Já são {time} além do seu horário.",
-        "Seu comprometimento é evidente. Já são {time} a mais!",
-        "Lembre-se de cuidar de si mesmo após essas {time} extras.",
-        "Uau, você está determinado! Já são {time} a mais.",
-        "Não esqueça de se esticar após essas {time} extras.",
-        "Seu tempo extra é impressionante! Já são {time}.",
-        "Não esqueça de se hidratar após {time} de trabalho extra!",
-        "Quem é essa máquina de trabalho? Já são {time} a mais!",
-        "Você está brilhando! E já são {time} extras.",
-        "Não se esqueça de fazer uma pausa após essas {time} a mais.",
-        "Impressionante! Você já tem {time} de trabalho extra.",
-        "Espero que esteja se mantendo hidratado com essas {time} extras.",
-        "Lembre-se de descansar os olhos após {time} a mais.",
-        "Vai com calma! Já são {time} a mais.",
-        "Seu esforço não passa despercebido! Já são {time} extras.",
-        "Você é a estrela do dia com essas {time} a mais!",
-        "Continue assim e você será o funcionário do mês! Já são {time} extras.",
-        "Você está indo além! Já são {time} a mais.",
-        "Não esqueça de fazer uma pausa, já são {time} extras!",
-        "Você é imparável! Mas lembre-se de descansar após {time} a mais."
+        "Você é incrível! Já se passaram {extraHours} desde que você completou suas 8 horas.",
+        "Hora de um merecido descanso! Você já trabalhou {extraHours} a mais!",
+        "Vai descansar! Você merece após {extraHours} extras!",
+        "Você é um guerreiro! {extraHours} a mais e contando.",
+        "Já pensou em uma pausa? {extraHours} extra é um bom motivo.",
+        "Hora extra detectada! {extraHours} e contando.",
+        "Cuidado para não se sobrecarregar! Você já tem {extraHours} a mais.",
+        "Você é um exemplo! Mas lembre-se de descansar após essas {extraHours} extras.",
+        "Parece que alguém está se esforçando! {extraHours} a mais já!",
+        "Dê uma pausa, herói do escritório! Você já tem {extraHours} extras.",
+        "Você está on fire! Já são {extraHours} além do seu horário.",
+        "Seu compromeextraHoursnto é evidente. Já são {extraHours} a mais!",
+        "Lembre-se de cuidar de si mesmo após essas {extraHours} extras.",
+        "Uau, você está determinado! Já são {extraHours} a mais.",
+        "Não esqueça de se esticar após essas {extraHours} extras.",
+        "Seu tempo extra é impressionante! Já são {extraHours}.",
+        "Não esqueça de se hidratar após {extraHours} de trabalho extra!",
+        "Quem é essa máquina de trabalho? Já são {extraHours} a mais!",
+        "Você está brilhando! E já são {extraHours} extras.",
+        "Não se esqueça de fazer uma pausa após essas {extraHours} a mais.",
+        "Impressionante! Você já tem {extraHours} de trabalho extra.",
+        "Espero que esteja se mantendo hidratado com essas {extraHours} extras.",
+        "Lembre-se de descansar os olhos após {extraHours} a mais.",
+        "Vai com calma! Já são {extraHours} a mais.",
+        "Seu esforço não passa despercebido! Já são {extraHours} extras.",
+        "Você é a estrela do dia com essas {extraHours} a mais!",
+        "Continue assim e você será o funcionário do mês! Já são {extraHours} extras.",
+        "Você está indo além! Já são {extraHours} a mais.",
+        "Não esqueça de fazer uma pausa, já são {extraHours} extras!",
+        "Você é imparável! Mas lembre-se de descansar após {extraHours} a mais."
     ],
     notClockedYetMessages: [
         "Ei! Você esqueceu de algo? Ainda não marcou o ponto!",
@@ -106,6 +106,28 @@ const funnyMessages = {
         "Não se esqueça: café primeiro, depois o ponto. Ou seria o contrário?",
         "Se está lendo isso, é um lembrete para marcar o ponto.",
         "Bater o ponto é o 'bom dia' que você dá para o relógio. Já deu o seu hoje?"
+    ],
+    missedReturn: [
+        "Acho que alguém decidiu estender o almoço hoje!",
+        "Você é tão rápido que até o relógio não conseguiu te acompanhar na volta.",
+        "Férias surpresa? Lembre-se de marcar o ponto quando voltar!",
+        "Almoço estendido? Não se esqueça de marcar o ponto de volta!",
+        "Sabe o que combina com almoço? Bater o ponto na volta!",
+        "Parece que você estava em uma missão secreta durante o almoço. Não esqueça do ponto de volta!",
+        "Alguém está aproveitando o dia de sol durante o almoço! Lembre-se do ponto de volta!",
+        "Bater o ponto na volta é a única forma de provar que você não está em uma ilha deserta durante o almoço.",
+        "O relógio bateu ponto, mas você esqueceu!",
+        "Marque o ponto de volta antes que o relógio decida tirar férias também!",
+        "Seu almoço parece ter se tornado uma viagem no tempo. Não esqueça do ponto de volta!",
+        "Alguém está tão animado para trabalhar que esqueceu de marcar o ponto de volta!",
+        "O relógio diz que é hora de trabalhar, mas você esqueceu de marcar o ponto de volta!",
+        "Bater o ponto de volta é como o final feliz de uma história de almoço. Não perca!",
+        "Marque o ponto de volta antes que o relógio comece a fazer piadas sobre você!",
+        "Você esqueceu de marcar o ponto de volta e o relógio está rindo de você.",
+        "Alguém está desfrutando de um almoço tão bom que esqueceu do ponto de volta!",
+        "O relógio está preocupado que você tenha se perdido no almoço. Lembre-se do ponto de volta!",
+        "Lá se foi o ponto de volta voando como um passarinho! Não deixe escapar!",
+        "Quem precisa de ponto de volta quando se tem uma boa refeição? Ah, você precisa!"
     ]
 };
 
@@ -142,8 +164,13 @@ document.addEventListener("DOMContentLoaded", function () {
     funcaoFazTudo();
 });
 
+
 function funcaoFazTudo() {
     chrome.storage.local.get(["workingHoursData", "version"], function (result) {
+
+document.addEventListener("DOMContentLoaded", function() {
+    const eightHoursInMillis = 8 * 60 * 60 * 1000;
+
         const data = result.workingHoursData;
 
         if (!data || !data.items) {
@@ -166,7 +193,7 @@ function funcaoFazTudo() {
                 const totalHours = Math.floor(totalMillis / (60 * 60 * 1000));
                 const totalMinutes = Math.floor((totalMillis % (60 * 60 * 1000)) / (60 * 1000));
 
-                const remainingMillis = (8 * 60 * 60 * 1000) - totalMillis;
+                const remainingMillis = (eightHoursInMillis) - totalMillis;
                 let adjustedRemainingMillis = remainingMillis < 0 ? 0 : remainingMillis;
 
                 const now = new Date();
@@ -174,14 +201,22 @@ function funcaoFazTudo() {
                 const estimatedEnd = new Date(estimatedEndMillis);
                 const formattedEstimatedEnd = `${String(estimatedEnd.getHours()).padStart(2, '0')}:${String(estimatedEnd.getMinutes()).padStart(2, '0')}`;
 
+                if (data.items.length % 2 === 0 && totalMillis <= eightHoursInMillis) {
+                    const randomIndex = Math.floor(Math.random() * funnyMessages.missedReturn.length);
+                    document.getElementById("hoursData").textContent = funnyMessages.missedReturn[randomIndex];
+                    return;
+                }
+
                 if (version === 'funny') {
                     let message;
 
-                    if (totalMillis <= 8 * 60 * 60 * 1000) {
+                    if (totalMillis <= eightHoursInMillis) {
                         const randomIndex = Math.floor(Math.random() * funnyMessages.before8Hours.length);
                         message = funnyMessages.before8Hours[randomIndex].replace('{estimatedEnd}', formattedEstimatedEnd);
-                    } else {
-                        const extraMillis = totalMillis - 8 * 60 * 60 * 1000;
+                    }
+
+                    if (totalMillis > eightHoursInMillis) {
+                        const extraMillis = totalMillis - eightHoursInMillis;
                         const extraHours = Math.floor(extraMillis / (60 * 60 * 1000));
                         const extraMinutes = Math.floor((extraMillis % (60 * 60 * 1000)) / (60 * 1000));
                         const extraTime = extraHours > 0 ? `${extraHours} horas e ${extraMinutes} minutos` : `${extraMinutes} minutos`;

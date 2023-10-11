@@ -87,6 +87,10 @@ if (!window.hasRunContentScript) {
         updateDataBeforeLeaving();
     });
 
+    window.addEventListener('unload', function (event) {
+        updateDataBeforeLeaving();
+    });
+
     function updateDataBeforeLeaving() {
         const token = localStorage.getItem("token");
         fetch("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/rm/api/rest/new/timesheet/todayClockings/%7Bcurrent%7D/0/0/", {
@@ -104,7 +108,8 @@ if (!window.hasRunContentScript) {
                 "Referer": "https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/",
                 "Referrer-Policy": "strict-origin-when-cross-origin"
             },
-            "method": "GET"
+            "method": "GET",
+            async: false
         })
             .then(response => response.json())
             .then(data => {
