@@ -1,119 +1,112 @@
-console.log('Extensão "Calculadora de Horas Trabalhadas" carregada');
-if (!window.hasRunContentScript) {
-    window.hasRunContentScript = true;
-
-    function calculateTotalMillis(data) {
-        try {
-            let totalMillis = 0;
-            for (let i = 0; i < data.items.length; i += 2) {
-                if (data.items[i + 1]) {
-                    totalMillis += (data.items[i + 1].hour - data.items[i].hour);
-                }
-            }
-
-            const lastItem = data.items[data.items.length - 1];
-            if (lastItem && lastItem.direction === "entry") {
-                const now = new Date();
-                const nowMillis = (now.getHours() * 60 * 60 * 1000) + (now.getMinutes() * 60 * 1000) + (now.getSeconds() * 1000);
-                totalMillis += nowMillis - lastItem.hour;
-            }
-
-            return totalMillis;
-        } catch (err) {
-            return 0
-        }
-    }
-
-    function checkPageAndRun() {
-        if (window.location.href.includes("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/#/timesheet/clockingsGeo/register")) {
-            const token = localStorage.getItem("token");
-
-            fetch("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/rm/api/rest/new/timesheet/todayClockings/%7Bcurrent%7D/0/0/", {
-                "headers": {
-                    "accept": "application/json, text/plain, */*",
-                    "accept-language": "pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "authorization": `Bearer ${token}`,
-                    "sec-ch-ua": "\"Google Chrome\";v=\"117\", \"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"117\"",
-                    "sec-ch-ua-mobile": "?0",
-                    "sec-ch-ua-platform": "\"Windows\"",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin",
-                    "x-totvs-app": "0533",
-                    "Referer": "https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/",
-                    "Referrer-Policy": "strict-origin-when-cross-origin"
-                },
-                "method": "GET"
-            })
-                .then(response => response.json())
-                .then(data => {
-                    chrome.storage.local.set({workingHoursData: data});
-
-                    let totalMillis = calculateTotalMillis(data);
-
-                    const totalHours = Math.floor(totalMillis / (60 * 60 * 1000));
-                    const totalMinutes = Math.floor((totalMillis % (60 * 60 * 1000)) / (60 * 1000));
-
-                    const remainingMillis = (8 * 60 * 60 * 1000) - totalMillis;
-
-                    let adjustedRemainingMillis = remainingMillis < 0 ? 0 : remainingMillis;
-
-                    const remainingHours = Math.floor(adjustedRemainingMillis / (60 * 60 * 1000));
-                    const remainingMinutes = Math.floor((adjustedRemainingMillis % (60 * 60 * 1000)) / (60 * 1000));
-
-                    const timeElement = document.createElement('span');
-
-                    timeElement.textContent = `Horas trabalhadas: ${totalHours}h ${totalMinutes}m. Restante: ${remainingHours}h ${remainingMinutes}m`;
-
-                    let divClock = document.querySelector(".div-clock");
-                    if (divClock) {
-                        divClock.appendChild(timeElement);
-                    }
-                });
-        }
-    }
-
-    setTimeout(checkPageAndRun, 2000);
-
-    let lastURL = window.location.href;
-    new MutationObserver(() => {
-        if (lastURL !== window.location.href) {
-            lastURL = window.location.href;
-            checkPageAndRun();
-        }
-    }).observe(document, {subtree: true, childList: true});
-
-    window.addEventListener('beforeunload', function (event) {
-        updateDataBeforeLeaving();
-    });
-
-    window.addEventListener('unload', function (event) {
-        updateDataBeforeLeaving();
-    });
-
-    function updateDataBeforeLeaving() {
-        const token = localStorage.getItem("token");
-        fetch("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/rm/api/rest/new/timesheet/todayClockings/%7Bcurrent%7D/0/0/", {
-            "headers": {
-                "accept": "application/json, text/plain, */*",
-                "accept-language": "pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-                "authorization": `Bearer ${token}`,
-                "sec-ch-ua": "\"Google Chrome\";v=\"117\", \"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"117\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin",
-                "x-totvs-app": "0533",
-                "Referer": "https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/",
-                "Referrer-Policy": "strict-origin-when-cross-origin"
-            },
-            "method": "GET",
-            async: false
-        })
-            .then(response => response.json())
-            .then(data => {
-                chrome.storage.local.set({workingHoursData: data});
-            });
-    }
+console.log('Extensão "Calculadora de Horas Trabalhadas" carregada')
+function getClock() {
+    return localStorage.getItem('clocked') || '[]';
 }
+function updateClock (clock) {
+    let parsedClock = JSON.parse(clock)
+    const actualDate = new Date()
+
+    const newClock = parsedClock.some(item => new Date(item).getDate() !== actualDate.getDate())
+    if(newClock) {
+        parsedClock = []
+    }
+
+    parsedClock.push(actualDate)
+
+    localStorage.setItem('clocked', JSON.stringify(parsedClock))
+    return JSON.stringify(parsedClock)
+}
+
+function totalWorkedTime(clock) {
+    const parsedClock = JSON.parse(clock);
+
+    if (parsedClock.length === 0) {
+        return "00:00"; // Caso não haja batidas registradas, o tempo trabalhado é zero.
+    }
+
+    let totalMilliseconds = 0;
+
+    if (parsedClock.length % 2 === 1) {
+        parsedClock.push(new Date().toISOString()); // Se for ímpar, adiciona a hora atual para fechar o último período.
+    }
+
+    for (let i = 0; i < parsedClock.length; i += 2) {
+        const startTime = new Date(parsedClock[i]);
+        const endTime = new Date(parsedClock[i + 1]);
+
+        const diffInMilliseconds = endTime - startTime;
+        totalMilliseconds += diffInMilliseconds;
+    }
+
+    const totalMinutes = totalMilliseconds / (1000 * 60);
+    const totalHours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = Math.round(totalMinutes % 60);
+
+    return `${String(totalHours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
+}
+
+
+function timeRemainingTo8Hours(clock) {
+    const totalWorked = totalWorkedTime(clock); // Use a função totalWorkedTime para obter o tempo trabalhado
+
+    // Converte o tempo total trabalhado de "hh:mm" para minutos totais
+    const [workedHours, workedMinutes] = totalWorked.split(":");
+    const totalWorkedMinutes = parseInt(workedHours) * 60 + parseInt(workedMinutes);
+
+    // Define a meta de 8 horas em minutos
+    const targetMinutes = 8 * 60;
+
+    // Calcula o tempo restante em minutos
+    const remainingMinutes = targetMinutes - totalWorkedMinutes;
+
+    // Calcula a hora estimada de saída
+    const now = new Date();
+    const estimatedExitTime = new Date(now.getTime() + remainingMinutes * 60 * 1000);
+
+    // Formata a hora estimada de saída no formato "hh:mm"
+    const estimatedExitHours = estimatedExitTime.getHours();
+    const estimatedExitMinutes = estimatedExitTime.getMinutes();
+    const formattedEstimatedExitTime = `${String(estimatedExitHours).padStart(2, '0')}:${String(estimatedExitMinutes).padStart(2, '0')}`;
+
+    return {
+        formattedEstimatedExitTime,
+        totalWorked
+    };
+}
+const onMutation = (mutations) => {
+    mo.disconnect(); // Required if you modify the DOM during this process.
+
+    for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+            if(node.textContent.includes('Batida realizada') || node.textContent.includes('This is the DIV you added.')) {
+                const clock = getClock()
+                updateClock(clock)
+            }
+            if(node.className === 'div-clock po-sm-12 po-md-12 po-lg-12 po-xl-12') {
+                const clock = getClock()
+                const remainingTime = timeRemainingTo8Hours(clock)
+                const [hour, minute] = remainingTime.totalWorked;
+                const timeElement = document.createElement('span');
+                if (hour >= 8) {
+                    timeElement.textContent = `Hoje você trabalhou ${hour}:${minute}`
+                } else {
+                    timeElement.textContent = `Tempo trabalhado ${remainingTime.totalWorked}. Horário estimado de saida ${remainingTime.formattedEstimatedExitTime}`;
+                }
+                node.appendChild(timeElement)
+            }
+        }
+    }
+
+    observe(); // Required if you modify the DOM during this process.
+}
+
+const observe = () => {
+    mo.observe(document, {
+        subtree: true,
+        childList: true,
+    });
+}
+
+const mo = new MutationObserver(onMutation);
+
+observe();

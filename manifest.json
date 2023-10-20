@@ -14,7 +14,7 @@
   "permissions": ["activeTab", "storage", "scripting"],
   "content_scripts": [
     {
-      "matches": ["https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/*"],
+      "matches": ["<all_urls>"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
