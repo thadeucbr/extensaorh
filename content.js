@@ -1,11 +1,15 @@
 console.log('Extensão "Calculadora de Horas Trabalhadas" carregada')
-function getClock() {
-    return localStorage.getItem('clocked') || '[]';
+async function getClock() {
+    const storedData = await chrome.storage.sync.get(['clocked']);
+    if (!storedData.clocked) {
+        storedData.clocked = '[]'
+    }
+    return storedData.clocked
+    // return localStorage.getItem('clocked') || '[]';
 }
-function updateClock (clock) {
+async function updateClock (clock) {
     let parsedClock = JSON.parse(clock)
     const actualDate = new Date()
-
     const newClock = parsedClock.some(item => new Date(item).getDate() !== actualDate.getDate())
     if(newClock) {
         parsedClock = []
@@ -13,7 +17,7 @@ function updateClock (clock) {
 
     parsedClock.push(actualDate)
 
-    localStorage.setItem('clocked', JSON.stringify(parsedClock))
+    await chrome.storage.sync.set({ clocked: JSON.stringify(parsedClock)})
     return JSON.stringify(parsedClock)
 }
 
@@ -73,17 +77,17 @@ function timeRemainingTo8Hours(clock) {
         totalWorked
     };
 }
-const onMutation = (mutations) => {
+const onMutation = async (mutations) => {
     mo.disconnect(); // Required if you modify the DOM during this process.
 
     for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
             if(node.textContent.includes('Batida realizada') || node.textContent.includes('This is the DIV you added.')) {
-                const clock = getClock()
-                updateClock(clock)
+                const clock = await getClock()
+                await updateClock(clock)
             }
             if(node.className === 'div-clock po-sm-12 po-md-12 po-lg-12 po-xl-12') {
-                const clock = getClock()
+                const clock = await getClock()
                 const remainingTime = timeRemainingTo8Hours(clock)
                 const [hour, minute] = remainingTime.totalWorked;
                 const timeElement = document.createElement('span');
