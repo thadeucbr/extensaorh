@@ -1,17 +1,30 @@
-document.addEventListener('DOMContentLoaded', function() {
+async function getVersion() {
+    const data = await chrome.storage.sync.get(['version']);
+    if (!data?.version) {
+        return 'short'
+    }
+    return data.version
+}
+
+async function saveVersion(version) {
+    chrome.storage.sync.set({ version })
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
     const radios = document.querySelectorAll('input[name="version"]');
     const saveButton = document.getElementById('saveSettings');
 
-    chrome.storage.local.get('version', function(data) {
-        if (data.version === 'funny') {
-            radios[1].checked = true;
-        }
-    });
+    const version = await getVersion()
+    console.log(version)
+    if (version === 'full') {
+        radios[0].checked = true;
+    } else {
+        radios[1].checked = true;
+    }
 
     saveButton.addEventListener('click', function() {
         let selectedVersion = Array.from(radios).find(r => r.checked).value;
-        chrome.storage.local.set({ 'version': selectedVersion }, function() {
-            window.close();
-        });
+        saveVersion(selectedVersion)
+        window.close()
     });
 });

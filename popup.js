@@ -1,15 +1,3 @@
-chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    const currentTab = tabs[0];
-    const url = currentTab.url;
-
-    if (url.includes("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/#/timesheet/clockingsGeo/register")) {
-        chrome.scripting.executeScript({
-            target: { tabId: currentTab.id },
-            files: ["content.js"]
-        });
-    }
-});
-
 const funnyMessages = {
     before8Hours: [
         "Segura o coração! Só às {estimatedEnd}",
@@ -109,27 +97,122 @@ const funnyMessages = {
     ]
 };
 
-function calculateTotalMillis(data) {
+async function getClock() {
     try {
-        let totalMillis = 0;
-        for (let i = 0; i < data.items.length; i += 2) {
-            if (data.items[i + 1]) {
-                totalMillis += (data.items[i + 1].hour - data.items[i].hour);
-            }
+        const storedData = await chrome.storage.sync.get(['clocked']);
+        if (!storedData.clocked) {
+            storedData.clocked = '[]'
         }
-
-        const lastItem = data.items[data.items.length - 1];
-        if (lastItem && lastItem.direction === "entry") {
-            const now = new Date();
-            const nowMillis = (now.getHours() * 60 * 60 * 1000) + (now.getMinutes() * 60 * 1000) + (now.getSeconds() * 1000);
-            totalMillis += nowMillis - lastItem.hour;
-        }
-
-        return totalMillis;
+        return storedData.clocked
     } catch (err) {
-        return 0
+        console.log(err)
+        const storedData = await chrome.storage.sync.get(['clocked']);
+        if (!storedData.clocked) {
+            storedData.clocked = '[]'
+        }
+        return storedData.clocked
     }
 }
+
+async function getVersion() {
+    const data = await chrome.storage.sync.get(['version']);
+    if (!data?.version) {
+        return 'short'
+    }
+    return data.version
+}
+
+function totalWorkedTime(clock) {
+    const parsedClock = JSON.parse(clock);
+
+    if (parsedClock.length === 0) {
+        return "00:00";
+    }
+
+    let totalMilliseconds = 0;
+
+    if (parsedClock.length % 2 === 1) {
+        parsedClock.push(new Date().toISOString());
+    }
+
+    for (let i = 0; i < parsedClock.length; i += 2) {
+        const startTime = new Date(parsedClock[i]);
+        const endTime = new Date(parsedClock[i + 1]);
+
+        const diffInMilliseconds = endTime - startTime;
+        totalMilliseconds += diffInMilliseconds;
+    }
+
+    const totalMinutes = totalMilliseconds / (1000 * 60);
+    const totalHours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = Math.round(totalMinutes % 60);
+
+    return `${String(totalHours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
+}
+
+function timeRemainingTo8Hours(clock) {
+    const totalWorked = clock;
+
+    const [workedHours, workedMinutes] = totalWorked.split(":");
+    const totalWorkedMinutes = parseInt(workedHours) * 60 + parseInt(workedMinutes);
+
+    const targetMinutes = 8 * 60;
+
+    const remainingMinutes = targetMinutes - totalWorkedMinutes;
+
+    const now = new Date();
+    const estimatedExitTime = new Date(now.getTime() + remainingMinutes * 60 * 1000);
+
+    const estimatedExitHours = estimatedExitTime.getHours();
+    const estimatedExitMinutes = estimatedExitTime.getMinutes();
+    const formattedEstimatedExitTime = `${String(estimatedExitHours).padStart(2, '0')}:${String(estimatedExitMinutes).padStart(2, '0')}`;
+
+    const hoursRemaining = Math.floor(remainingMinutes / 60);
+    const minutesRemaining = remainingMinutes % 60;
+
+    const formattedRemainingTime = `${String(hoursRemaining).padStart(2, '0')}:${String(minutesRemaining).padStart(2, '0')}`;
+
+    return {
+        formattedEstimatedExitTime,
+        totalWorked,
+        formattedRemainingTime
+    };
+}
+
+function shortMode(hour, minute, formattedEstimatedExitTime) {
+    let message;
+    if (hour < 8) {
+        const randomIndex = Math.floor(Math.random() * funnyMessages.before8Hours.length);
+        message = funnyMessages.before8Hours[randomIndex].replace('{estimatedEnd}', formattedEstimatedExitTime);
+    } else {
+        const randomIndex = Math.floor(Math.random() * funnyMessages.after8Hours.length);
+        message = funnyMessages.after8Hours[randomIndex].replace('{extraHours}', `${hour}:${minute}`);
+    }
+    document.getElementById("hoursData").innerHTML = message;
+}
+
+function fullMode({ totalWorked, formattedEstimatedExitTime, formattedRemainingTime }) {
+    const html = `<p id="workedHours"/>\n<p id="remainingHours"/>\n<p id="estimatedEnd"/>`;
+    document.getElementById("hoursData").innerHTML = html;
+    document.getElementById("workedHours").textContent = `Horas trabalhadas: ${totalWorked}`;
+    document.getElementById("remainingHours").textContent = `Restante: ${formattedRemainingTime}`;
+    document.getElementById("estimatedEnd").textContent = `Você deve trabalhar até as ${formattedEstimatedExitTime}`;
+}
+
+async function insertElement() {
+    const clock = await getClock();
+    const totalWorkedT = totalWorkedTime(clock);
+    const { totalWorked, formattedEstimatedExitTime, formattedRemainingTime } = timeRemainingTo8Hours(totalWorkedT);
+    const [hour, minute] = totalWorked.split(':');
+    const version = await getVersion();
+
+    if (version === 'full') {
+        fullMode({ totalWorked, formattedEstimatedExitTime, formattedRemainingTime })
+    } else {
+        shortMode(hour, minute, formattedEstimatedExitTime)
+    }
+}
+
 document.getElementById('openSettings').addEventListener('click', function () {
     var leftPosition = window.screen.width * 0.45;
     var topPosition = window.screen.height * 0.45;
@@ -137,78 +220,11 @@ document.getElementById('openSettings').addEventListener('click', function () {
     settings = window.open(chrome.runtime.getURL('settings.html'), 'settings', `width=300,height=200,left=${leftPosition},top=${topPosition}`);
 
     settings.addEventListener('beforeunload', function () {
-        funcaoFazTudo();
+        insertElement()
     })
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    funcaoFazTudo();
+
+document.addEventListener("DOMContentLoaded", async function () {
+    await insertElement()
 });
-
-function funcaoFazTudo() {
-    chrome.storage.local.get(["workingHoursData", "version"], function (result) {
-        const data = result.workingHoursData;
-        if (!data || !data.items || data.items.length === 0) {
-            const randomIndex = Math.floor(Math.random() * funnyMessages.notClockedYetMessages.length);
-            document.getElementById("hoursData").textContent = funnyMessages.notClockedYetMessages[randomIndex];
-            return; // Sai da função para evitar mais processamento
-        }
-
-        const version = result.version || 'funny';
-
-        if (data.items && data.items.length > 0) {
-            const recordDate = new Date(data.items[0].date);
-            const today = new Date();
-
-            if (recordDate.getUTCFullYear() === today.getFullYear() &&
-                recordDate.getUTCMonth() === today.getMonth() &&
-                recordDate.getUTCDate() === today.getDate() && data.items) {
-
-                let totalMillis = calculateTotalMillis(data);
-                const totalHours = Math.floor(totalMillis / (60 * 60 * 1000));
-                const totalMinutes = Math.floor((totalMillis % (60 * 60 * 1000)) / (60 * 1000));
-
-                const remainingMillis = (8 * 60 * 60 * 1000) - totalMillis;
-                let adjustedRemainingMillis = remainingMillis < 0 ? 0 : remainingMillis;
-
-                const now = new Date();
-                const estimatedEndMillis = now.getTime() + adjustedRemainingMillis;
-                const estimatedEnd = new Date(estimatedEndMillis);
-                const formattedEstimatedEnd = `${String(estimatedEnd.getHours()).padStart(2, '0')}:${String(estimatedEnd.getMinutes()).padStart(2, '0')}`;
-
-                if (version === 'funny') {
-                    let message;
-
-                    if (totalMillis <= 8 * 60 * 60 * 1000) {
-                        const randomIndex = Math.floor(Math.random() * funnyMessages.before8Hours.length);
-                        message = funnyMessages.before8Hours[randomIndex].replace('{estimatedEnd}', formattedEstimatedEnd);
-                    } else {
-                        const extraMillis = totalMillis - 8 * 60 * 60 * 1000;
-                        const extraHours = Math.floor(extraMillis / (60 * 60 * 1000));
-                        const extraMinutes = Math.floor((extraMillis % (60 * 60 * 1000)) / (60 * 1000));
-                        const extraTime = extraHours > 0 ? `${extraHours} horas e ${extraMinutes} minutos` : `${extraMinutes} minutos`;
-
-                        const randomIndex = Math.floor(Math.random() * funnyMessages.after8Hours.length);
-                        message = funnyMessages.after8Hours[randomIndex].replace('{extraHours}', extraTime);
-                    }
-
-                    document.getElementById("hoursData").innerHTML = message;
-                } else {
-                    const html = `<p id="workedHours"/>\n<p id="remainingHours"/>\n<p id="estimatedEnd"/>`;
-                    document.getElementById("hoursData").innerHTML = html;
-                    const formattedWorkedHours = `${String(totalHours).padStart(2, '0')}:${String(totalMinutes).padStart(2, '0')}`;
-                    const remainingHours = Math.floor(adjustedRemainingMillis / (60 * 60 * 1000));
-                    const remainingMinutes = Math.floor((adjustedRemainingMillis % (60 * 60 * 1000)) / (60 * 1000));
-                    const formattedRemainingHours = `${String(remainingHours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
-
-                    document.getElementById("workedHours").textContent = `Horas trabalhadas: ${formattedWorkedHours}`;
-                    document.getElementById("remainingHours").textContent = `Restante: ${formattedRemainingHours}`;
-                    document.getElementById("estimatedEnd").textContent = `Você deve trabalhar até as ${formattedEstimatedEnd}`;
-                }
-            } else {
-                const randomIndex = Math.floor(Math.random() * funnyMessages.notClockedYetMessages.length);
-                document.getElementById("hoursData").textContent = funnyMessages.notClockedYetMessages[randomIndex];
-            }
-        }
-    });
-}

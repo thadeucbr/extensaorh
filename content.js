@@ -1,11 +1,18 @@
 console.log('Extensão "Calculadora de Horas Trabalhadas" carregada')
 async function getClock() {
     const storedData = await chrome.storage.sync.get(['clocked']);
-    if (!storedData.clocked) {
+    if (storedData?.clocked) {
+        const actualDate = new Date();
+        const parsedClock = JSON.parse(storedData.clocked)
+        const newClock = parsedClock.some(clock => new Date(clock).getDate() !== actualDate.getDate())
+        if (newClock) {
+            storedData.clocked = '[]'
+        }
+    }
+    if (!storedData?.clocked) {
         storedData.clocked = '[]'
     }
     return storedData.clocked
-    // return localStorage.getItem('clocked') || '[]';
 }
 async function updateClock (clock) {
     let parsedClock = JSON.parse(clock)
@@ -25,13 +32,13 @@ function totalWorkedTime(clock) {
     const parsedClock = JSON.parse(clock);
 
     if (parsedClock.length === 0) {
-        return "00:00"; // Caso não haja batidas registradas, o tempo trabalhado é zero.
+        return "00:00";
     }
 
     let totalMilliseconds = 0;
 
     if (parsedClock.length % 2 === 1) {
-        parsedClock.push(new Date().toISOString()); // Se for ímpar, adiciona a hora atual para fechar o último período.
+        parsedClock.push(new Date().toISOString());
     }
 
     for (let i = 0; i < parsedClock.length; i += 2) {
@@ -51,23 +58,18 @@ function totalWorkedTime(clock) {
 
 
 function timeRemainingTo8Hours(clock) {
-    const totalWorked = totalWorkedTime(clock); // Use a função totalWorkedTime para obter o tempo trabalhado
+    const totalWorked = totalWorkedTime(clock);
 
-    // Converte o tempo total trabalhado de "hh:mm" para minutos totais
     const [workedHours, workedMinutes] = totalWorked.split(":");
     const totalWorkedMinutes = parseInt(workedHours) * 60 + parseInt(workedMinutes);
 
-    // Define a meta de 8 horas em minutos
     const targetMinutes = 8 * 60;
 
-    // Calcula o tempo restante em minutos
     const remainingMinutes = targetMinutes - totalWorkedMinutes;
 
-    // Calcula a hora estimada de saída
     const now = new Date();
     const estimatedExitTime = new Date(now.getTime() + remainingMinutes * 60 * 1000);
 
-    // Formata a hora estimada de saída no formato "hh:mm"
     const estimatedExitHours = estimatedExitTime.getHours();
     const estimatedExitMinutes = estimatedExitTime.getMinutes();
     const formattedEstimatedExitTime = `${String(estimatedExitHours).padStart(2, '0')}:${String(estimatedExitMinutes).padStart(2, '0')}`;
@@ -78,7 +80,7 @@ function timeRemainingTo8Hours(clock) {
     };
 }
 const onMutation = async (mutations) => {
-    mo.disconnect(); // Required if you modify the DOM during this process.
+    mo.disconnect();
 
     for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
@@ -101,7 +103,7 @@ const onMutation = async (mutations) => {
         }
     }
 
-    observe(); // Required if you modify the DOM during this process.
+    observe();
 }
 
 const observe = () => {
