@@ -1,4 +1,39 @@
 console.log('Extensão "Calculadora de Horas Trabalhadas" carregada')
+async function callTotvsApi() {
+    const token = localStorage.getItem("token");
+
+    const apiResponse = await fetch("https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/rm/api/rest/new/timesheet/todayClockings/%7Bcurrent%7D/0/0/", {
+        "headers": {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "authorization": `Bearer ${token}`,
+            "sec-ch-ua": "\"Google Chrome\";v=\"117\", \"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"117\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-totvs-app": "0533",
+            "Referer": "https://curupirasa132885.rm.cloudtotvs.com.br/FrameHTML/web/app/RH/PortalMeuRH/",
+            "Referrer-Policy": "strict-origin-when-cross-origin"
+        },
+        "method": "GET"
+    }).then((response) => response.json())
+
+    const data = apiResponse.items.map(item => {
+        const dateValue = item.date;
+        const hourValue = item.hour;
+
+        const dateObj = new Date(dateValue);
+
+        dateObj.setTime(dateObj.getTime() + hourValue);
+
+        const date = dateObj.toISOString().replace('Z', '')
+
+        return date;
+    });
+    return data
+}
 async function getClock() {
     const storedData = await chrome.storage.sync.get(['clocked']);
     if (storedData?.clocked) {
@@ -15,22 +50,18 @@ async function getClock() {
     return storedData.clocked
 }
 async function updateClock (clock) {
-    let parsedClock = JSON.parse(clock)
+    let parsedClock = await callTotvsApi()
     const actualDate = new Date()
     const newClock = parsedClock.some(item => new Date(item).getDate() !== actualDate.getDate())
     if(newClock) {
         parsedClock = []
     }
-
-    parsedClock.push(actualDate)
-
     await chrome.storage.sync.set({ clocked: JSON.stringify(parsedClock)})
     return JSON.stringify(parsedClock)
 }
 
 function totalWorkedTime(clock) {
     const parsedClock = JSON.parse(clock);
-
     if (parsedClock.length === 0) {
         return "00:00";
     }
@@ -59,7 +90,6 @@ function totalWorkedTime(clock) {
 
 function timeRemainingTo8Hours(clock) {
     const totalWorked = totalWorkedTime(clock);
-
     const [workedHours, workedMinutes] = totalWorked.split(":");
     const totalWorkedMinutes = parseInt(workedHours) * 60 + parseInt(workedMinutes);
 
@@ -85,11 +115,10 @@ const onMutation = async (mutations) => {
     for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
             if(node.textContent.includes('Batida realizada') || node.textContent.includes('This is the DIV you added.')) {
-                const clock = await getClock()
-                await updateClock(clock)
+                await updateClock()
             }
             if(node.className === 'div-clock po-sm-12 po-md-12 po-lg-12 po-xl-12') {
-                const clock = await getClock()
+                const clock = await updateClock()
                 const remainingTime = timeRemainingTo8Hours(clock)
                 const [hour, minute] = remainingTime.totalWorked;
                 const timeElement = document.createElement('span');
