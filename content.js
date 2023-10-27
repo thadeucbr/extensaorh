@@ -109,25 +109,29 @@ function timeRemainingTo8Hours(clock) {
         totalWorked
     };
 }
+
+async function insertElement(node){
+    const clock = await updateClock()
+    const remainingTime = timeRemainingTo8Hours(clock)
+    const [hour, minute] = remainingTime.totalWorked;
+    const timeElement = document.createElement('span');
+    if (hour >= 8) {
+        timeElement.textContent = `Hoje você trabalhou ${hour}:${minute}`
+    } else {
+        timeElement.textContent = `Tempo trabalhado ${remainingTime.totalWorked}. Horário estimado de saida ${remainingTime.formattedEstimatedExitTime}`;
+    }
+    node.appendChild(timeElement)
+}
 const onMutation = async (mutations) => {
     mo.disconnect();
 
     for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
             if(node.textContent.includes('Batida realizada') || node.textContent.includes('This is the DIV you added.')) {
-                await updateClock()
+                insertElement(node)
             }
             if(node.className === 'div-clock po-sm-12 po-md-12 po-lg-12 po-xl-12') {
-                const clock = await updateClock()
-                const remainingTime = timeRemainingTo8Hours(clock)
-                const [hour, minute] = remainingTime.totalWorked;
-                const timeElement = document.createElement('span');
-                if (hour >= 8) {
-                    timeElement.textContent = `Hoje você trabalhou ${hour}:${minute}`
-                } else {
-                    timeElement.textContent = `Tempo trabalhado ${remainingTime.totalWorked}. Horário estimado de saida ${remainingTime.formattedEstimatedExitTime}`;
-                }
-                node.appendChild(timeElement)
+               insertElement(node)
             }
         }
     }
