@@ -112,6 +112,7 @@ function timeRemainingTo8Hours(clock) {
 
 async function insertElement(node){
     const clock = await updateClock()
+    console.log(clock)
     const remainingTime = timeRemainingTo8Hours(clock)
     const [hour, minute] = remainingTime.totalWorked;
     const timeElement = document.createElement('span');

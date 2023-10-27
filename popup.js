@@ -158,19 +158,23 @@ function timeRemainingTo8Hours(clock) {
 
     const targetMinutes = 8 * 60;
 
-    const remainingMinutes = targetMinutes - totalWorkedMinutes;
-
+    let remainingMinutes = targetMinutes - totalWorkedMinutes;
+    let overtime = false;
+    if(remainingMinutes < 1) {
+        remainingMinutes *= -1
+        overtime = true;
+    }
     const now = new Date();
     const estimatedExitTime = new Date(now.getTime() + remainingMinutes * 60 * 1000);
 
     const estimatedExitHours = estimatedExitTime.getHours();
     const estimatedExitMinutes = estimatedExitTime.getMinutes();
-    const formattedEstimatedExitTime = `${String(estimatedExitHours).padStart(2, '0')}:${String(estimatedExitMinutes).padStart(2, '0')}`;
-
+    let formattedEstimatedExitTime = `${String(estimatedExitHours).padStart(2, '0')}:${String(estimatedExitMinutes).padStart(2, '0')}`;
+    if(overtime) formattedEstimatedExitTime = `Hey, o mundo não vai acabar se você parar agora!`
     const hoursRemaining = Math.floor(remainingMinutes / 60);
     const minutesRemaining = remainingMinutes % 60;
 
-    const formattedRemainingTime = `${String(hoursRemaining).padStart(2, '0')}:${String(minutesRemaining).padStart(2, '0')}`;
+    const formattedRemainingTime = `${overtime ? '-':''}${String(hoursRemaining).padStart(2, '0')}:${String(minutesRemaining).padStart(2, '0')}`;
 
     return {
         formattedEstimatedExitTime,
